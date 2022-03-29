@@ -9,11 +9,11 @@
         <label>{{ user['id'] }}</label>
         <input type="text" name="{{user['cpu']}}"
                placeholder="cpu requirement"
-               value="{{ request.form[name] }}"></input>
+               value="{{ request.form['cpu'] }}"></input>
 
         <input type="text" name="{{user['ram']}}"
                placeholder="ram requirement"
-               value="{{ request.form[name] }}"></input>
+               value="{{ request.form['ram'] }}"></input>
         <br>
         <br>
         {% endfor %}

@@ -2,36 +2,48 @@ import datetime
 import json
 import numpy as np
 import random
-from flask import Flask, render_template, request, url_for, flash, redirect
+from flask import Flask, render_template, request, url_for, flash, redirect, session
+from flask_session import Session
 import copy
+# import config
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '48c2a54bf8112bb79acbfbd4dd69c1c166c78065b26bfc44'
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 messages = []
-n_users = 0
-user_input = list()
-total_cpu = 0
-total_ram = 0
+# n_users = 0
+# user_input = list()
+# total_cpu = 0
+# total_ram = 0
+
+
 
 @app.route('/',  methods=('GET', 'POST'))
 def hello():
     if request.method == 'POST':
-        global n_users
+        # global n_users
+        print(request.form)
+        # 
         n_users = request.form['n_users']
-        # distribution = request.form['distribution']
-        global total_cpu
-        global total_ram
         total_cpu = request.form['total_cpu']
-        total_ram = request.form['total_ram']
+        session["total_cpu"] = total_cpu
+        # distribution = request.form['distribution']
+        # global total_cpu
+        # global total_ram
+        
+        session["total_ram"] = request.form['total_ram']
+        session["n_users"] = n_users
 
-        if not n_users:
+        if not session.get("n_users"):
             flash('No of users is required!')
         # elif not distribution:
         #     flash('Distribution is required!')
-        elif not total_ram:
+        elif not session.get("total_ram"):
             flash('Total RAM is required!')
-        elif not total_cpu:
+        elif not session.get("total_cpu"):
             flash('Total CPU is required!')
         else:
             # messages.append({'n_users': n_users, 'distribution': distribution})
@@ -49,10 +61,12 @@ def drf():
 
 @app.route('/user_scheudule/<n_users>', methods=('GET', 'POST'))
 def user_scheudule(n_users):
-    n_users = int(n_users)
+    n_users = int(session.get("n_users"))
+    print("No of users " , n_users)
     form_elements = list()
-    global user_input
-    user_input = list()
+    # global user_input
+    # config.user_input = list()
+    session["user_input"] = list()
     start_id = 65
     
     for i in range(n_users):
@@ -72,7 +86,7 @@ def user_scheudule(n_users):
             user['id'] = chr(start_id + idx)
             user['cpu'] = int(request.form[element['cpu']])
             user['ram'] = int(request.form[element['ram']])
-            user_input.append(user)
+            session.get("user_input").append(user)
             if not request.form[element['cpu']] or not request.form[element['ram']]:
                 flag = False
             
@@ -80,16 +94,23 @@ def user_scheudule(n_users):
             flash('Please fill the fields!')
         else:
             # messages.append({'n_users': n_users, 'distribution': distribution})
+            # print("data recived from form : ",config.user_input)
             return redirect(url_for('drf'))
     return render_template('user_schedule.html', form_elements=form_elements)
 
 
 def calculate_schedule():
+   
     schedule = []
     ## convert cpu and ram to float to avoid int operations
-    global total_cpu
-    global total_ram
-    global n_users
+    # global total_cpu
+    # global total_ram
+    # global n_users
+    # global user_input
+    total_cpu = session.get("total_cpu")
+    total_ram = session.get("total_ram")
+    n_users = session.get("n_users")
+    print("no of users : ", n_users, "total cpu : ", total_cpu, "total ram : ", total_ram)
     total_cpu = float(total_cpu)
     total_ram = float(total_ram)
     n_users = int(n_users)
@@ -106,8 +127,9 @@ def calculate_schedule():
 
     row = dict()
     user_index = random.randint(0, n_users -1 )
-    row['schedule'] = user_input[user_index]['id']
-    users = copy.deepcopy(user_input)
+    print("inital random user index", user_index, "data : ", session.get("user_input") )
+    row['schedule'] = session.get("user_input")[user_index]['id']
+    users = copy.deepcopy(session.get("user_input"))
     ## initialize the users list to update dom. share and res.shares
     for idx, user in enumerate(users):
         user['res. share'] = [0,0]
@@ -117,10 +139,10 @@ def calculate_schedule():
     
     for idx, user in enumerate(users):
         if idx ==  user_index:
-            user['res. share'][0] += user_input[user_index]['cpu'] / total_cpu
-            user['res. share'][1] += user_input[user_index]['ram'] / total_ram
-            cpu_remaining -= user_input[user_index]['cpu']
-            ram_remaining -= user_input[user_index]['ram']
+            user['res. share'][0] += session.get("user_input")[user_index]['cpu'] / total_cpu
+            user['res. share'][1] += session.get("user_input")[user_index]['ram'] / total_ram
+            cpu_remaining -= session.get("user_input")[user_index]['cpu']
+            ram_remaining -= session.get("user_input")[user_index]['ram']
             user['dom. share'] = max(user['res. share'][0] , user['res. share'][0])
             dominant_shares[user_index] = user['dom. share']
     row['users'] = users
@@ -133,14 +155,14 @@ def calculate_schedule():
         # print("dominant_shares", user_index)
         
         row = copy.deepcopy(result[len(result)-1])
-        row['schedule'] = user_input[user_index]['id']
+        row['schedule'] = session.get("user_input")[user_index]['id']
         for idx, user in enumerate(row['users']):
             # print(idx, "--", user)
             if idx ==  user_index:
-                user['res. share'][0] += user_input[user_index]['cpu'] / total_cpu
-                user['res. share'][1] += user_input[user_index]['ram'] / total_ram
-                cpu_remaining -= user_input[user_index]['cpu']
-                ram_remaining -= user_input[user_index]['ram']
+                user['res. share'][0] += session.get("user_input")[user_index]['cpu'] / total_cpu
+                user['res. share'][1] += session.get("user_input")[user_index]['ram'] / total_ram
+                cpu_remaining -= session.get("user_input")[user_index]['cpu']
+                ram_remaining -= session.get("user_input")[user_index]['ram']
                 user['dom. share'] = max(user['res. share'][0] , user['res. share'][1])
                 dominant_shares[user_index] = user['dom. share']
         # row['users'] = users

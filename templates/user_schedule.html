@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} DRF Simulator {% endblock %}</h1>
+    <form method="post">
+        <label for="title">Enter the requirements of each user</label>
+        <br>
+        {% for user in form_elements %}
+        <label>{{ user['id'] }}</label>
+        <input type="text" name="{{user['cpu']}}"
+               placeholder="cpu requirement"
+               value="{{ request.form[name] }}"></input>
+
+        <input type="text" name="{{user['ram']}}"
+               placeholder="ram requirement"
+               value="{{ request.form[name] }}"></input>
+        <br>
+        <br>
+        {% endfor %}
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+
+{% endblock %}

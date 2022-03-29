@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} DRF Simulator {% endblock %}</h1>
+    <form method="post">
+        <label for="title">Enter no of users</label>
+        <br>
+        <input type="text" name="n_users"
+               placeholder="no of users"
+               value="{{ request.form['n_users'] }}"></input>
+        <br>
+        <br>
+
+        <label for="title">Enter total CPU</label>
+        <br>
+        <input type="text" name="total_cpu"
+               placeholder="total cpu"
+               value="{{ request.form['total_cpu'] }}"></input>
+        <br>
+        <br>
+
+        <label for="title">Enter total ram</label>
+        <br>
+        <input type="text" name="total_ram"
+               placeholder="total ram"
+               value="{{ request.form['total_ram'] }}"></input>
+        <br>
+        <br>
+
+        <!-- <label for="distribution">Choose a distribution:</label>
+
+        <select name="distribution" id="cars" value="{{ request.form['distribution'] }}">
+          <option value="uniform">Uniform</option>
+          <option value="log">Log</option>
+        </select>  -->
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+
+{% endblock %}

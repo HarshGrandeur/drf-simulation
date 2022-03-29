@@ -1,0 +1,43 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} DRF Schedule {% endblock %}</h1>
+    <!-- {% for sch in schedule %}
+        <div style="padding: 10px; background-color: #EEE; margin: 20px">
+            <p style="font-size: 24px">{{ sch }} 18 GB 1 GB</p>
+        </div>
+        {% endfor %} -->
+
+        <table class="tg">
+            <thead>
+              <tr>
+                <th class="tg-0pky" rowspan="2">Schedule</th>
+                {% for user in schedule[0]['users'] %}
+                <th class="tg-0pky" colspan="2"> User {{user['id']}}</th>
+                {% endfor %} 
+                <th class="tg-0pky" rowspan="2">CPU Total alloc</th>
+                <th class="tg-0pky" rowspan="2">RAM Total alloc</th>
+              </tr>
+              <tr>
+                {% for user in schedule[0]['users'] %}
+                <th class="tg-0pky">res. share</th>
+                <th class="tg-0pky">dom. share</th>
+                {% endfor %} 
+              </tr>
+            </thead>
+            <tbody>
+            {% for sch in schedule %}
+              <tr>
+                <td class="tg-0pky">{{sch['schedule']}}</td>
+                {% for user in sch['users'] %}
+                <td class="tg-0pky"> ({{"{0:.2f}".format(user['res. share'][0])}},{{"{0:.2f}".format(user['res. share'][1])}}) </td>
+                <td class="tg-0pky">{{"{0:.2f}".format(user['dom. share'])}}</td>
+                {% endfor %} 
+                <td class="tg-0pky">{{"{0:.2f}".format(sch['cpu_toal_alloc'])}}</td>
+                <td class="tg-0pky">{{"{0:.2f}".format(sch['ram_toal_alloc'])}}</td>
+              </tr>
+              {% endfor %} 
+            </tbody>
+            </table>
+{% endblock %}
